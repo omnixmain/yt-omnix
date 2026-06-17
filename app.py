@@ -19,7 +19,7 @@ def get_stream(video_id):
         'simulate': True, # Get direct URL without downloading
         'extractor_args': {
             'youtube': {
-                'player_client': ['android', 'ios'], # Bypass restrictions
+                'player_client': ['tv', 'web_embedded'], # Try embedded and TV clients to avoid bot block
                 'live_from_start': True,
                 'skip': ['webpage', 'configs'] # Skip webpage to bypass bot protection
             }
