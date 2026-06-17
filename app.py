@@ -21,6 +21,7 @@ def get_stream(video_id):
             'youtube': {
                 'player_client': ['android', 'ios'], # Bypass restrictions
                 'live_from_start': True,
+                'skip': ['webpage', 'configs'] # Skip webpage to bypass bot protection
             }
         },
         'headers': {
