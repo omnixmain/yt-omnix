@@ -63,8 +63,47 @@ def get_stream(video_id):
                 return jsonify({"error": "Could not extract stream URL"}), 404
                 
     except Exception as e:
-        print(f"Error extracting {url}: {e}")
-        return jsonify({"error": str(e)}), 500
+        print(f"yt-dlp failed for {video_id}: {e}, trying fallbacks...")
+        import urllib.request
+        import json
+        
+        # 1. Try Piped APIs
+        piped_apis = [
+            f"https://pipedapi.kavin.rocks/streams/{video_id}",
+            f"https://pipedapi.adminforge.de/streams/{video_id}",
+            f"https://piped-api.lunar.icu/streams/{video_id}"
+        ]
+        
+        for api_url in piped_apis:
+            try:
+                req = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=4) as response:
+                    data = json.loads(response.read().decode())
+                    if data.get('hls'):
+                        print(f"Piped fallback success: {api_url}")
+                        return redirect(data['hls'], code=302)
+            except:
+                pass
+                
+        # 2. Try Invidious APIs
+        invidious_apis = [
+            f"https://vid.puffyan.us/api/v1/videos/{video_id}",
+            f"https://invidious.nerdvpn.de/api/v1/videos/{video_id}",
+            f"https://inv.tux.pizza/api/v1/videos/{video_id}"
+        ]
+        
+        for api_url in invidious_apis:
+            try:
+                req = urllib.request.Request(api_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=4) as response:
+                    data = json.loads(response.read().decode())
+                    if data.get('hlsUrl'):
+                        print(f"Invidious fallback success: {api_url}")
+                        return redirect(data['hlsUrl'], code=302)
+            except:
+                pass
+                
+        return jsonify({"error": f"Failed completely. yt-dlp error: {str(e)}"}), 500
 
 @app.route('/')
 def index():
